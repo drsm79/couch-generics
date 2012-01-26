@@ -1,0 +1,89 @@
+<html>
+  <head>
+    <title>Document editor</title>
+    <script src="loader.js" type="text/javascript"></script>
+    <script>
+  	$(function() {
+      Backbone.couch.databaseName = "generics";
+      Backbone.couch.ddocName  = "generics";
+      Backbone.couch.enableChangesFeed = false;
+      Backbone.couch.debug = false;
+
+  	  var Document = Backbone.Model.extend({
+        initialize: function(doc_id) {
+          this.set({id: doc_id});
+        }
+      });
+
+      var Viewer = Backbone.View.extend({
+        initialize: function(options) {
+          _.bindAll(this);
+          this.el = '#' + this.id;
+          // TODO: replace with a single item collection
+          this.model = new Document(options.model_id);
+          this.model.bind('change', this.render);
+          this.model.bind('reset', this.render);
+          this.model.fetch();
+          var default_template = '<p><%= key %> : <%= value %></p>';
+          this.template = _.template(options.template || default_template);
+        },
+        render: function() {
+          var obj = this.model.toJSON();
+          // Clean up the json as we don't need some of the backbone internal
+          // data structures.
+          delete obj[obj.id];
+          delete obj.id;
+          var that = this;
+          _.each(obj, function(value, key){
+            $(that.el).append(this.template({'key':key, 'value': value}));
+          }, that);
+          return this;
+        }
+      });
+
+      var Editor = Viewer.extend({
+        // The Editor is just a viewer with a different template.
+        initialize: function(options) {
+          _.bindAll(this);
+          this.el = '#' + this.id;
+          // TODO: replace with a single item collection
+          this.model = new Document(options.model_id);
+          this.model.bind('change', this.render);
+          this.model.bind('reset', this.render);
+          this.model.fetch();
+
+          var default_template = '<p><b><%= key %></b> : ';
+          default_template += '<% if (_.indexOf(this.locked_fields, key) >= 0){ %>';
+          default_template += '<%= value %>';
+          default_template += '<%} else {%>';
+          default_template += '<input type="text" name="<%= key %>" value="<%= value %>"/>';
+          default_template += '<% } %></p>';
+
+          this.template = _.template(options.template || default_template);
+          // Define a list of fields that are shown but not editable,
+          // this assumes that the model drops "private" fields
+          this.locked_fields = options.locked_fields || [];
+        },
+        render: function() {
+          Viewer.prototype.render.apply(this);
+          $(this.el).append('<button type="button">Save</button>');
+        }
+      });
+
+      var model_id = "_design/generics";
+      var template = '<p><b><%= key %></b> : <%= value %></p>';
+      var viewer = new Viewer({id:'document_viewer', model_id: model_id, template:template});
+
+      var editor = new Editor({id:'document_editor', model_id: model_id, locked_fields:['_rev', '_id']});
+
+    });
+    </script>
+  </head>
+  <body>
+    <h1>Document viewer</h1>
+    <div id="document_viewer"></div>
+    <hr/>
+    <h1>Document editor</h1>
+    <div id="document_editor"></div>
+  </body>
+</html>
