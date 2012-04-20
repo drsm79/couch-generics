@@ -1,7 +1,7 @@
 import random
 import json
 from optparse import OptionParser
-import microcouch
+from microcouch import MicroCouch
 
 names = ["Isabella", "Sophia", "Emma", "Olivia", "Ava", "Emily", "Abigail",
         "Madison", "Chloe", "Mia", "Addison", "Elizabeth", "Ella", "Natalie",
@@ -145,9 +145,12 @@ if __name__ == "__main__":
     for field in schema:
         function_schema[field] = bind_function(schema[field])
     docs = []
+
+    microcouch = MicroCouch(opts.url)
+
     for d in xrange(opts.number):
         docs.append(gen_doc(function_schema))
         if len(docs) > 500:
-            microcouch.push(docs, opts.url)
+            microcouch.push(docs)
             docs = []
-    microcouch.push(docs, opts.url)
+    microcouch.push(docs)
