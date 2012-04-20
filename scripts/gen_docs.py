@@ -118,7 +118,7 @@ def bind_function(field):
         if t == 'int':
             return lambda: random.randint(field['min'], field['max'])
         elif t == 'float':
-            return lambda: field['min'] + (field['max'] * random.random)
+            return lambda: field['min'] + (field['max'] * random.random())
         elif t == 'string':
             return lambda: ''.join(random.choice(string.letters) for i in xrange(random.randint(1, 15))).title()
         elif t == 'ipsum':
