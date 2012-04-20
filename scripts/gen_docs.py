@@ -28,12 +28,12 @@ def gen_doc(schema):
 
 def options():
     parser = OptionParser()
-    parser.add_option("-u", "--url", default="http://localhost:5984/docs",
-            help="Url of the database - don't put password in it - default http://localhost:5984/test")
+    parser.add_option("-u", "--url", default="http://localhost:5984/test",
+            help="Url of the database - don't put password in it [default %default]")
     parser.add_option("-s", "--schema", default="schema.json",
-            help="JSON file describing the schema of documents to generate, default schema.json")
+            help="JSON file describing the schema of documents to generate [default %default]")
     parser.add_option("-n","--number", default=10, type="int",
-            help="Number of docs to generate, default 10")
+            help="Number of docs to generate [default %default]")
     opts, args = parser.parse_args()
     return opts, args
 
